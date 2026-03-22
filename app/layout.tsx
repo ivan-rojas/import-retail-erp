@@ -29,6 +29,58 @@ function buildPublicLogoUrl(supabaseUrl: string, logoPath: string): string | nul
   return `${base}/storage/v1/object/public/${bucket}/${objectPath}`
 }
 
+/** Used to resolve relative OG images (e.g. /apple-touch-icon.png). Optional. */
+function resolveMetadataBase(): URL | undefined {
+  const explicit = process.env.NEXT_PUBLIC_APP_URL?.trim()
+  if (explicit) {
+    try {
+      return new URL(explicit.startsWith('http') ? explicit : `https://${explicit}`)
+    } catch {
+      /* ignore */
+    }
+  }
+  const vercel = process.env.VERCEL_URL?.trim()
+  if (vercel) {
+    try {
+      return new URL(vercel.startsWith('http') ? vercel : `https://${vercel}`)
+    } catch {
+      /* ignore */
+    }
+  }
+  return undefined
+}
+
+/** Link previews (WhatsApp, etc.): prefer branding logo URL; else static icon if metadataBase is set. */
+function linkPreviewMetadata(
+  siteName: string,
+  title: string,
+  description: string,
+  brandingLogoUrl: string | null,
+  metadataBase: URL | undefined
+): Pick<Metadata, 'metadataBase' | 'openGraph' | 'twitter'> {
+  const shareImage =
+    brandingLogoUrl ??
+    (metadataBase ? new URL('/apple-touch-icon.png', metadataBase).href : null)
+
+  const base = {
+    ...(metadataBase ? { metadataBase } : {}),
+    openGraph: {
+      title,
+      description,
+      siteName,
+      type: 'website' as const,
+      ...(shareImage ? { images: [{ url: shareImage, alt: siteName }] } : {}),
+    },
+    twitter: {
+      card: 'summary' as const,
+      title,
+      description,
+      ...(shareImage ? { images: [shareImage] } : {}),
+    },
+  }
+  return base
+}
+
 export async function generateMetadata(): Promise<Metadata> {
   const fallbackName = 'Import Retail'
   const description = 'Sistema de gestión de inventario'
@@ -36,6 +88,8 @@ export async function generateMetadata(): Promise<Metadata> {
   try {
     const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL
     const serviceRoleKey = process.env.SUPABASE_SECRET_KEY
+
+    const metadataBase = resolveMetadataBase()
 
     if (!supabaseUrl || !serviceRoleKey) {
       return {
@@ -47,6 +101,13 @@ export async function generateMetadata(): Promise<Metadata> {
           statusBarStyle: 'default',
           title: fallbackName,
         },
+        ...linkPreviewMetadata(
+          fallbackName,
+          fallbackName,
+          description,
+          null,
+          metadataBase
+        ),
       }
     }
 
@@ -76,10 +137,13 @@ export async function generateMetadata(): Promise<Metadata> {
             apple: [{ url: logoUrl }],
           }
         : {
+            icon: [{ url: '/apple-touch-icon.png' }],
             apple: '/apple-touch-icon.png',
           },
+      ...linkPreviewMetadata(name, title, description, logoUrl, metadataBase),
     }
   } catch {
+    const metadataBase = resolveMetadataBase()
     return {
       title: `${fallbackName}`,
       description,
@@ -89,6 +153,13 @@ export async function generateMetadata(): Promise<Metadata> {
         statusBarStyle: 'default',
         title: fallbackName,
       },
+      ...linkPreviewMetadata(
+        fallbackName,
+        fallbackName,
+        description,
+        null,
+        metadataBase
+      ),
     }
   }
 }

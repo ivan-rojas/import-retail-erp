@@ -173,10 +173,19 @@ export async function POST(request: Request) {
 
     const supabase = await createClient()
 
-    // Ensure profile has the correct full_name and role (in case trigger defaulted role)
+    // Trigger `on_auth_user_created` (handle_new_user) already inserts the profiles row.
+    // Do not INSERT here (duplicate PK). Update to enforce email, full_name, role, must_reset_password.
     const { error: profileError, data: profile } = await supabase
       .from('profiles')
-      .insert({ id: userId, email, full_name, role, must_reset_password: true })
+      .update({
+        email,
+        full_name,
+        role,
+        must_reset_password: true,
+      })
+      .eq('id', userId)
+      .select()
+      .single()
 
     if (profileError) {
       return NextResponse.json({ error: profileError.message }, { status: 500 })
