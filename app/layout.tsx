@@ -14,6 +14,10 @@ import { ThemeColorProvider } from '@/components/providers/theme-color/theme-col
 import { BrandingProvider } from '@/components/providers/branding/branding-provider'
 import { getClientBrandingWithClient } from '@/lib/database/configuration'
 
+export const viewport = {
+  themeColor: '#0a0a0a',
+}
+
 function buildPublicLogoUrl(supabaseUrl: string, logoPath: string): string | null {
   const cleaned = (logoPath ?? '').trim().replace(/^\/+/, '')
   if (!cleaned) return null
@@ -38,7 +42,6 @@ export async function generateMetadata(): Promise<Metadata> {
         title: `${fallbackName}`,
         description,
         manifest: '/manifest.webmanifest',
-        themeColor: '#0a0a0a',
         appleWebApp: {
           capable: true,
           statusBarStyle: 'default',
@@ -61,7 +64,6 @@ export async function generateMetadata(): Promise<Metadata> {
       title,
       description,
       manifest: '/manifest.webmanifest',
-      themeColor: '#0a0a0a',
       appleWebApp: {
         capable: true,
         statusBarStyle: 'default',
@@ -82,7 +84,6 @@ export async function generateMetadata(): Promise<Metadata> {
       title: `${fallbackName}`,
       description,
       manifest: '/manifest.webmanifest',
-      themeColor: '#0a0a0a',
       appleWebApp: {
         capable: true,
         statusBarStyle: 'default',

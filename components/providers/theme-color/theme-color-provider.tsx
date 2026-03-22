@@ -119,7 +119,10 @@ export function ThemeColorProvider({ children }: { children: React.ReactNode }) 
         backgroundDark: mounted ? backgroundDark : null,
         setPrimaryColor,
         setBackgroundColor,
-        resolvedTheme: resolvedTheme ?? undefined,
+        resolvedTheme:
+          resolvedTheme === 'light' || resolvedTheme === 'dark'
+            ? resolvedTheme
+            : undefined,
         themeReady,
       }}
     >
