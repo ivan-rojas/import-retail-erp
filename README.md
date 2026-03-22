@@ -1,4 +1,4 @@
-# TL Inventory App
+# Import Retail ERP
 
 A comprehensive inventory management system built with Next.js and Supabase, designed specifically for managing electronic device inventory, sales, and business operations.
 
