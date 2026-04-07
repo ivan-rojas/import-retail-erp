@@ -61,13 +61,24 @@ CREATE TABLE IF NOT EXISTS public.product_categories (
     updated_by UUID REFERENCES public.profiles(id)
 );
 
-INSERT INTO public.product_categories (name, icon)
-VALUES
-  ('iphone', 'smartphone'),
-  ('audio', 'headphones'),
-  ('cable', 'cable'),
-  ('carga', 'battery'),
-  ('proteccion', 'shield')
+INSERT INTO public.product_categories (name, icon, created_by)
+SELECT
+  c.name,
+  c.icon,
+  p.id
+FROM (
+  VALUES
+    ('iphone', 'smartphone'),
+    ('audio', 'headphones'),
+    ('cable', 'cable'),
+    ('carga', 'battery'),
+    ('proteccion', 'shield')
+) AS c(name, icon)
+CROSS JOIN LATERAL (
+  SELECT id
+  FROM public.profiles
+  LIMIT 1
+) AS p
 ON CONFLICT (name) DO NOTHING;
 
 ALTER TABLE public.products
